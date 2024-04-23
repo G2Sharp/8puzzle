@@ -21,6 +21,36 @@ class EightPuzzle:
             new_state[empty_row][empty_col], new_state[new_row][new_col] = new_state[new_row][new_col], new_state[empty_row][empty_col]
             return new_state, (new_row, new_col)
         return None, None
+    
+    def move_up(self):
+        empty_row, empty_col = self.empty_tile
+        if empty_row > 0:
+            self.initial_state[empty_row][empty_col], self.initial_state[empty_row - 1][empty_col] = self.initial_state[empty_row - 1][empty_col], self.initial_state[empty_row][empty_col]
+            self.empty_tile = (empty_row - 1, empty_col)
+            print(self.initial_state)
+
+    def move_down(self):
+        empty_row, empty_col = self.empty_tile
+        if empty_row < self.size - 1:
+            self.initial_state[empty_row][empty_col], self.initial_state[empty_row + 1][empty_col] = self.initial_state[empty_row + 1][empty_col], self.initial_state[empty_row][empty_col]
+            self.empty_tile = (empty_row + 1, empty_col)
+            print(self.initial_state)
+
+
+    def move_left(self):
+        empty_row, empty_col = self.empty_tile
+        if empty_col > 0:
+            self.initial_state[empty_row][empty_col], self.initial_state[empty_row][empty_col - 1] = self.initial_state[empty_row][empty_col - 1], self.initial_state[empty_row][empty_col]
+            self.empty_tile = (empty_row, empty_col - 1)
+            print(self.initial_state)
+
+
+    def move_right(self):
+        empty_row, empty_col = self.empty_tile
+        if empty_col < self.size - 1:
+            self.initial_state[empty_row][empty_col], self.initial_state[empty_row][empty_col + 1] = self.initial_state[empty_row][empty_col + 1], self.initial_state[empty_row][empty_col]
+            self.empty_tile = (empty_row, empty_col + 1)
+            print(self.initial_state)
 
     def is_goal_state(self, state):
         return state == self.goal_state
@@ -32,3 +62,9 @@ class EightPuzzle:
             if new_state:
                 moves.append(new_state)
         return moves
+    
+    def goal_position(self, value):
+        for i in range(self.size):
+            for j in range(self.size):
+                if self.goal_state[i][j] == value:
+                    return i, j

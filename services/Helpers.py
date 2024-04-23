@@ -22,3 +22,4 @@ def flash_boards(initial_state, goal_state,screen,pygame,background_image ,WIDTH
     draw_board(goal_state,pygame,screen,background_image,WIDTH,HEIGHT,TILE_SIZE)
     pygame.display.flip()
     pygame.time.wait(1000)  # Adjust the delay as needed
+

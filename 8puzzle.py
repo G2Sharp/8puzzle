@@ -21,18 +21,16 @@ background_image = pygame.image.load('./public/turtle.jpg')  # Adjust the filena
 # Main game loop
 def main():
     # Define the initial puzzle board
-    initial_board = [
-        [1, 2, 3],
-        [4, 5, 6],
-        [0, 7, 8] ] # 0 represents the empty tile
+    initial_board =[[1, 2, 0], [4, 5, 3], [7, 8, 6]] # 0 represents the empty tile
 
     puzzle = EightPuzzle(initial_board)
     solver = EightPuzzleSolver(puzzle)
-    solution = solver.bfs()
+    # solution = solver.bfs()
+    solution = solver.gbfs()
 
     if solution is not None:
-        flash_boards(initial_board, solution , screen,pygame,background_image,WIDTH,HEIGHT,TILE_SIZE)
         print("Solução encontrada:", solution)
+        flash_boards(initial_board, solution , screen,pygame,background_image,WIDTH,HEIGHT,TILE_SIZE)
     else:
         screen.fill((0, 0, 0))
         draw_board(initial_board,pygame,screen,background_image,WIDTH,HEIGHT,TILE_SIZE)
@@ -42,15 +40,28 @@ def main():
 
     
     # Main game loop
-    running = True
-    while running:
-        # Handle events
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+        running = True
+        while running:
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
+            #         elif event.key == pygame.K_w:  # Move Up
+            #             puzzle.move_up()
+            #         elif event.key == pygame.K_s:  # Move Down
+            #             puzzle.move_down()
+            #         elif event.key == pygame.K_a:  # Move Left
+            #             puzzle.move_left()
+            #         elif event.key == pygame.K_d:  # Move Right
+            #             puzzle.move_right()
+
+            # # Display the updated puzzle
+            # screen.fill((0, 0, 0))
+            # draw_board(puzzle.initial_state, pygame, screen, background_image, WIDTH, HEIGHT, TILE_SIZE)
+            # pygame.display.flip()
 
     pygame.quit()
     sys.exit()
