@@ -10,8 +10,6 @@ def draw_board(board,pygame,screen,background_image,WIDTH,HEIGHT,TILE_SIZE):
                 screen.blit(background_image, tile_rect, image_rect)
                 pygame.draw.rect(screen, (255, 255, 255), tile_rect, 2)
 
-
-
 # Flash initial board followed by goal board
 def flash_boards(initial_state, goal_state,screen,pygame,background_image ,WIDTH,HEIGHT,TILE_SIZE):
     screen.fill((0, 0, 0))
