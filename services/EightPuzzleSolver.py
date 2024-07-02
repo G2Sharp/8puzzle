@@ -1,136 +1,126 @@
-class EightPuzzleSolver:
-    def __init__(self, puzzle):
-        # Inicializa o solver com o quebra-cabeça fornecido
-        self.puzzle = puzzle
-        self.counter = 0  # Contador de movimentos
+from collections import deque
+import heapq
 
-    def bfs(self):
-        # Busca em Largura (BFS) para resolver o quebra-cabeça
-        self.counter = 0
-        initial_state = self.puzzle.initial_state
-        if self.puzzle.is_goal_state(initial_state):
-            return initial_state
-        frontier = [initial_state]  # Fronteira inicial com o estado inicial
-        explored = set()  # Conjunto de estados explorados
-        while frontier:
-            current_state = frontier.pop(0)  # Remove o primeiro estado da fronteira
-            explored.add(
-                tuple(map(tuple, current_state))
-            )  # Adiciona o estado atual aos explorados
-            if self.puzzle.is_goal_state(current_state):
-                return self._report(
-                    "BFS", current_state
-                )  # Retorna a solução encontrada
-            for move in self.puzzle.get_possible_moves(current_state):
-                move_tuple = tuple(map(tuple, move))
-                if move_tuple not in explored:
-                    explored.add(move_tuple)
-                    frontier.append(
-                        move
-                    )  # Adiciona os próximos estados possíveis à fronteira
-                    self._print_move("BFS", move)
-        return None
 
-    def dfs(self):
-        # Busca em Profundidade (DFS) para resolver o quebra-cabeça
-        self.counter = 0
-        initial_state = self.puzzle.initial_state
-        if self.puzzle.is_goal_state(initial_state):
-            return initial_state
-        frontier = [initial_state]  # Fronteira inicial com o estado inicial
-        explored = set()  # Conjunto de estados explorados
-        while frontier:
-            current_state = frontier.pop()  # Remove o último estado da fronteira
-            explored.add(
-                tuple(map(tuple, current_state))
-            )  # Adiciona o estado atual aos explorados
-            if self.puzzle.is_goal_state(current_state):
-                return self._report(
-                    "DFS", current_state
-                )  # Retorna a solução encontrada
-            for move in self.puzzle.get_possible_moves(current_state):
-                move_tuple = tuple(map(tuple, move))
-                if move_tuple not in explored:
-                    frontier.append(
-                        move
-                    )  # Adiciona os próximos estados possíveis à fronteira
-                    self._print_move("DFS", move)
-        return None
+# BFS
+def bfs(puzzle):
+    initial_state = puzzle.initial_state
+    frontier = deque([(initial_state, [])])
+    explored = set()
 
-    def gbfs(self, type):
-        # Busca Gulosa (GBFS) para resolver o quebra-cabeça
-        self.counter = 0
-        initial_state = self.puzzle.initial_state
-        if self.puzzle.is_goal_state(initial_state):
-            return initial_state
-        frontier = [
-            (self.heuristic(initial_state, type), initial_state)
-        ]  # Fronteira com a heurística de Manhattan
-        explored = set()  # Conjunto de estados explorados
-        while frontier:
-            _, current_state = frontier.pop(
-                0
-            )  # Remove o estado com menor heurística da fronteira
-            explored.add(
-                tuple(map(tuple, current_state))
-            )  # Adiciona o estado atual aos explorados
-            if self.puzzle.is_goal_state(current_state):
-                return self._report(
-                    "GBFS", current_state
-                )  # Retorna a solução encontrada
-            for move in self.puzzle.get_possible_moves(current_state):
-                move_tuple = tuple(map(tuple, move))
-                if move_tuple not in explored:
-                    explored.add(move_tuple)
-                    heuristic_value = self.heuristic(
-                        move, type
-                    )  # Calcula a heurística de Manhattan para o próximo estado
-                    frontier.append(
-                        (heuristic_value, move)
-                    )  # Adiciona os próximos estados possíveis à fronteira com sua heurística
-                    frontier.sort(
-                        key=lambda x: x[0]
-                    )  # Ordena a fronteira com base na heurística
-                    self._print_move_h("GBFS", type, move)
+    while frontier:
+        state, path = frontier.popleft()
 
-        return None
+        if puzzle.is_goal_state(state):
+            print("BFS Solution Found:")
+            print("Path Length:", len(path))
+            for i, move in enumerate(path):
+                print(f"Move {i + 1}:")
+                puzzle.print_state(move)
+            print("Goal State:")
+            puzzle.print_state(state)
+            return path + [state]
 
-    def heuristic(self, state, t):
-        # Calcula a heurística para um estado dado
+        explored.add(state)
+
+        for neighbor in puzzle.get_possible_moves(state):
+            if neighbor not in explored and all(
+                neighbor != item[0] for item, _ in frontier
+            ):
+                frontier.append((neighbor, path + [state]))
+
+    return None
+
+
+# DFS
+def dfs(puzzle):
+    initial_state = puzzle.initial_state
+    frontier = [(initial_state, [])]
+    explored = set()
+
+    while frontier:
+        state, path = frontier.pop()
+
+        if puzzle.is_goal_state(state):
+            print("DFS Solution Found:")
+            print("Path Length:", len(path))
+            for i, move in enumerate(path):
+                print(f"Move {i + 1}:")
+                puzzle.print_state(move)
+            print("Goal State:")
+            puzzle.print_state(state)
+            return path + [state]
+
+        explored.add(state)
+
+        for neighbor in puzzle.get_possible_moves(state):
+            if neighbor not in explored and all(
+                neighbor != item[0] for item, _ in frontier
+            ):
+                frontier.append((neighbor, path + [state]))
+
+    return None
+
+
+# Greedy Search
+def heuristic(state, goal_state, type):
+    # Usando a soma das distâncias de Manhattan como heurística
+    if type.lower() == "mhd":
         distance = 0
-        if t == "MDH":
-            # Heurística da Distância de Manhattan
-            for i in range(self.puzzle.size):
-                for j in range(self.puzzle.size):
-                    if state[i][j] != 0:
-                        goal_row, goal_col = self.puzzle.goal_position(state[i][j])
-                        distance += abs(i - goal_row) + abs(j - goal_col)
-        else:
-            # Heurística da Distância de Hamming
-            for i in range(self.puzzle.size):
-                for j in range(self.puzzle.size):
-                    if state[i][j] != self.puzzle.goal_state[i][j]:
-                        distance += 1
+        goal_positions = {goal_state[i][j]: (i, j) for i in range(3) for j in range(3)}
+
+        for i in range(3):
+            for j in range(3):
+                if state[i][j] != 0:
+                    goal_i, goal_j = goal_positions[state[i][j]]
+                    distance += abs(i - goal_i) + abs(j - goal_j)
         return distance
 
-    def _report(self, algorithm, solution):
-        # Reporta a solução encontrada pelo algoritmo
-        print(f"---------------{algorithm}-Report-----------------")
-        print(f"Total moves: {self.counter}")
-        print("Solution found:", solution)
-        print(f"---------------{algorithm}-Report-----------------")
-        return solution
+    # Usando a soma das distâncias de Hamming como heurística
+    else:
+        distance = 0
+        for i in range(3):
+            for j in range(3):
+                if state[i][j] != 0 and state[i][j] != goal_state[i][j]:
+                    distance += 1  # Conta o número de tiles fora de lugar
+        return distance
 
-    def _print_move(self, algorithm, move):
-        # Imprime o movimento realizado pelo algoritmo
-        print(f"Move ~> {self.counter} | {algorithm} | {move}")
-        self.counter += 1
 
-    def _print_move_h(self, algorithm, t, move):
-        # Imprime o movimento realizado pelo algoritmo
-        if algorithm == "GBFS" and t == "MDH":
-            print(f"Move ~> {self.counter} | {algorithm} | {t} | {move}")
-        else:
-            t = "HH"
-            print(f"Move ~> {self.counter} | {algorithm} | {t} | {move}")
-        self.counter += 1
+def greedy_search(puzzle, type):
+    initial_state = puzzle.initial_state
+    goal_state = puzzle.goal_state
+    frontier = []
+    heapq.heappush(
+        frontier, (heuristic(initial_state, goal_state, type), initial_state, [])
+    )
+    explored = set()
+
+    while frontier:
+        _, state, path = heapq.heappop(frontier)
+
+        if puzzle.is_goal_state(state):
+            print("Greedy Search Solution Found:")
+            print("Path Length:", len(path))
+            print(
+                "Heuristc:",
+                "Manhatan Distance" if type.lower() == "mhd" else "Hamming Distance",
+            )
+            for i, move in enumerate(path):
+                print(f"Move {i + 1}:")
+                puzzle.print_state(move)
+            print("Goal State:")
+            puzzle.print_state(state)
+            return path + [state]
+
+        explored.add(state)
+
+        for neighbor in puzzle.get_possible_moves(state):
+            if neighbor not in explored and all(
+                neighbor != item[1] for _, item, _ in frontier
+            ):
+                heapq.heappush(
+                    frontier,
+                    (heuristic(neighbor, goal_state, type), neighbor, path + [state]),
+                )
+
+    return None
